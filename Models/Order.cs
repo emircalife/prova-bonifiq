@@ -1,4 +1,6 @@
-﻿namespace ProvaPub.Models
+﻿using ProvaPub.Models.DTO;
+
+namespace ProvaPub.Models
 {
 	public class Order
 	{
@@ -7,5 +9,5 @@
 		public int CustomerId { get; set; }
 		public DateTime OrderDate { get; set; }
 		public Customer Customer { get; set; }
-	}
+    }
 }

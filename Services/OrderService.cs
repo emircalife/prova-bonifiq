@@ -1,4 +1,6 @@
-﻿using ProvaPub.Models;
+﻿using ProvaPub.Enums;
+using ProvaPub.Models;
+using ProvaPub.Models.DTO;
 using ProvaPub.Repository;
 
 namespace ProvaPub.Services
@@ -12,33 +14,44 @@ namespace ProvaPub.Services
             _ctx = ctx;
         }
 
-        public async Task<Order> PayOrder(string paymentMethod, decimal paymentValue, int customerId)
-		{
-			if (paymentMethod == "pix")
-			{
-				//Faz pagamento...
-			}
-			else if (paymentMethod == "creditcard")
-			{
-				//Faz pagamento...
-			}
-			else if (paymentMethod == "paypal")
-			{
-				//Faz pagamento...
-			}
-
-			return await InsertOrder(new Order() //Retorna o pedido para o controller
+        public async Task<OrderDTO> PayOrder(string paymentMethod, decimal paymentValue, int customerId)
+        {
+            if (Enum.TryParse(paymentMethod.ToUpper(), true, out PaymentMethodEnum paymentMethodEnum))
             {
-                Value = paymentValue
-            });
+                switch (paymentMethodEnum)
+                {
+                    case PaymentMethodEnum.PIX:
+                        //Executa pedido com PIX
+                        break;
+                    case PaymentMethodEnum.CREDITCARD:
+                        //Executa pedido com CREDITCARD
+                        break;
+                    case PaymentMethodEnum.PAYPAL:
+                        //Executa pedido com PAYPAL
+                        break;
+                }
+            }
+            else
+            {
+                throw new PaymentMethodException();
+            }
 
+            Order order = new Order();
 
+            order.Value = paymentValue;
+            order.CustomerId = customerId;
+            order.OrderDate = DateTime.UtcNow;
+
+            Task<OrderDTO> tskOrderDTO = InsertOrder(order);
+
+            return tskOrderDTO.Result;
 		}
 
-		public async Task<Order> InsertOrder(Order order)
+		public async Task<OrderDTO> InsertOrder(Order order)
         {
-			//Insere pedido no banco de dados
-			return (await _ctx.Orders.AddAsync(order)).Entity;
+            Order orderNew = (await _ctx.Orders.AddAsync(order)).Entity;
+
+            return OrderDTO.EntityToDTO(orderNew);
         }
 	}
 }
